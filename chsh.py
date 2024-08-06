@@ -1,38 +1,38 @@
-# Required imports
+# Importaciones requeridas
 
 from qiskit import QuantumCircuit
 from qiskit_aer.primitives import Sampler
 from numpy import pi
 from numpy.random import randint
 
-def chsh_game(strategy):
-    """Plays the CHSH game
+def juego_chsh(estrategia):
+    """Juega el juego CHSH
     Args:
-        strategy (callable): A function that takes two bits (as `int`s) and
-            returns two bits (also as `int`s). The strategy must follow the
-            rules of the CHSH game.
+        estrategia: Una función que toma dos bits (como `int`s) y
+            devuelve dos bits (también como `int`s). La estrategia debe seguir
+            las reglas del juego CHSH.
     Returns:
-        int: 1 for a win, 0 for a loss.
+        int: 1 para una victoria, 0 para una derrota.
     """
-    # Referee chooses x and y randomly
+    # El árbitro elige x e y aleatoriamente
     x, y = randint(0, 2), randint(0, 2)
 
-    # Use strategy to choose a and b
-    a, b = strategy(x, y)
+    # Usa la estrategia para elegir a y b
+    a, b = estrategia(x, y)
 
-    # Referee decides if Alice and Bob win or lose
+    # El árbitro decide si Alice y Bob ganan o pierden
     if (a != b) == (x & y):
-        return 1  # Win
-    return 0  # Lose
+        return 1  # Victoria
+    return 0  # Derrota
 
-def chsh_circuit(x, y):
-    """Creates a `QuantumCircuit` that implements the best CHSH strategy.
+def circuito_chsh(x, y):
+    """Crea un `QuantumCircuit` que implementa la mejor estrategia CHSH.
     Args:
-        x (int): Alice's bit (must be 0 or 1)
-        y (int): Bob's bit (must be 0 or 1)
+        x (int): El bit de Alice (debe ser 0 o 1)
+        y (int): El bit de Bob (debe ser 0 o 1)
     Returns:
-        QuantumCircuit: Circuit that, when run, returns Alice and Bob's
-            answer bits.
+        QuantumCircuit: Circuito que, cuando se ejecute, devuelve los bits de
+            respuesta de Alice y Bob.
     """
     qc = QuantumCircuit(2, 2)
     qc.h(0)
@@ -55,61 +55,60 @@ def chsh_circuit(x, y):
 
     return qc
 
-# Draw the four possible circuits
+# Dibuja los cuatro circuitos posibles
 
 print("(x,y) = (0,0)")
-display(chsh_circuit(0, 0).draw())
+display(circuito_chsh(0, 0).draw())
 
 print("(x,y) = (0,1)")
-display(chsh_circuit(0, 1).draw())
+display(circuito_chsh(0, 1).draw())
 
 print("(x,y) = (1,0)")
-display(chsh_circuit(1, 0).draw())
+display(circuito_chsh(1, 0).draw())
 
 print("(x,y) = (1,1)")
-display(chsh_circuit(1, 1).draw())
+display(circuito_chsh(1, 1).draw())
 
-sampler = Sampler()
+muestreador = Sampler()
 
-
-def quantum_strategy(x, y):
-    """Carry out the best strategy for the CHSH game.
+def estrategia_cuantica(x, y):
+    """Realiza la mejor estrategia para el juego CHSH.
     Args:
-        x (int): Alice's bit (must be 0 or 1)
-        y (int): Bob's bit (must be 0 or 1)
+        x (int): El bit de Alice (debe ser 0 o 1)
+        y (int): El bit de Bob (debe ser 0 o 1)
     Returns:
-        (int, int): Alice and Bob's answer bits (respectively)
+        (int, int): Los bits de respuesta de Alice y Bob (respectivamente)
     """
-    # `shots=1` runs the circuit once
-    result = sampler.run(chsh_circuit(x, y), shots=1).result()
-    statistics = result.quasi_dists[0].binary_probabilities()
-    bits = list(statistics.keys())[0]
+    # `shots=1` ejecuta el circuito una vez
+    resultado = muestreador.run(circuito_chsh(x, y), shots=1).result()
+    estadisticas = resultado.quasi_dists[0].binary_probabilities()
+    bits = list(estadisticas.keys())[0]
     a, b = bits[0], bits[1]
     return a, b
 
-NUM_GAMES = 1000
-TOTAL_SCORE = 0
+NUM_JUEGOS = 1000
+PUNTAJE_TOTAL = 0
 
-for _ in range(NUM_GAMES):
-    TOTAL_SCORE += chsh_game(quantum_strategy)
+for _ in range(NUM_JUEGOS):
+    PUNTAJE_TOTAL += juego_chsh(estrategia_cuantica)
 
-print("Fraction of games won:", TOTAL_SCORE / NUM_GAMES)
+print("Fracción de juegos ganados:", PUNTAJE_TOTAL / NUM_JUEGOS)
 
-def classical_strategy(x, y):
-    """An optimal classical strategy for the CHSH game
+def estrategia_clasica(x, y):
+    """Una estrategia clásica óptima para el juego CHSH
     Args:
-        x (int): Alice's bit (must be 0 or 1)
-        y (int): Bob's bit (must be 0 or 1)
+        x (int): El bit de Alice (debe ser 0 o 1)
+        y (int): El bit de Bob (debe ser 0 o 1)
     Returns:
-        (int, int): Alice and Bob's answer bits (respectively)
+        (int, int): Los bits de respuesta de Alice y Bob (respectivamente)
     """
-    # Alice's answer
+    # Respuesta de Alice
     if x == 0:
         a = 0
     elif x == 1:
         a = 1
 
-    # Bob's answer
+    # Respuesta de Bob
     if y == 0:
         b = 1
     elif y == 1:
@@ -117,10 +116,10 @@ def classical_strategy(x, y):
 
     return a, b
 
-NUM_GAMES = 1000
-TOTAL_SCORE = 0
+NUM_JUEGOS = 1000
+PUNTAJE_TOTAL = 0
 
-for _ in range(NUM_GAMES):
-    TOTAL_SCORE += chsh_game(classical_strategy)
+for _ in range(NUM_JUEGOS):
+    PUNTAJE_TOTAL += juego_chsh(estrategia_clasica)
 
-print("Fraction of games won:", TOTAL_SCORE / NUM_GAMES)
+print("Fracción de juegos ganados:", PUNTAJE_TOTAL / NUM_JUEGOS)
